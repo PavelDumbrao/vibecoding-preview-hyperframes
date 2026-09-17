@@ -1,5 +1,6 @@
 name: Render Kie AI fast delivery
 
+# Fast delivery render: 24 HyperFrames scene snapshots + True Pavel voice + FFmpeg.
 on:
   workflow_dispatch:
   push:
@@ -37,7 +38,6 @@ jobs:
           manifest = json.loads(Path('kie-ai/audio-manifest.json').read_text())
           path = Path('render-fast/index.html')
           html = path.read_text()
-          # HyperFrames owns timeline seeking for snapshots; remove normal browser autoplay.
           html = html.replace(
               "if(!window.__hyperframes)requestAnimationFrame(()=>tl.play(0));",
               ""
