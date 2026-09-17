@@ -42,7 +42,7 @@ jobs:
           html = path.read_text()
 
           # HyperFrames owns the GSAP timeline during deterministic rendering.
-          # The browser-only fallback forces screenshot capture, so strip it from render input.
+          # Remove the browser-only playback fallback from the render copy.
           html = html.replace(
               "if(!window.__hyperframes)requestAnimationFrame(()=>tl.play(0));",
               ""
@@ -71,7 +71,7 @@ jobs:
             --output ../kie-ai/Kie_AI_Video_Pipeline_True_Pavel.mp4 \
             --fps 24 \
             --quality standard \
-            --workers 2 \
+            --workers 1 \
             --low-memory-mode
 
       - name: Verify MP4
