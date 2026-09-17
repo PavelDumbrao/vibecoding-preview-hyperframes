@@ -1,0 +1,1 @@
+Responsive preview fix prepared: remove JS/fixed transform scaling and use a fluid 16:9 composition with CSS container units so ChatGPT preview and 1920×1080 render share the same layout.
