@@ -1,0 +1,1 @@
+Validated responsive preview at 1000×700, 520×700, and 1400×800. The corrected lesson uses a fluid 16:9 composition and CSS container query units, with no JS transform/scale layer.
