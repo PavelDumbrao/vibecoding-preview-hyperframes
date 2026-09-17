@@ -12,7 +12,7 @@ on:
 jobs:
   render:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -40,6 +40,14 @@ jobs:
           manifest = json.loads(Path('kie-ai/audio-manifest.json').read_text())
           path = Path('render-kie/index.html')
           html = path.read_text()
+
+          # HyperFrames owns the GSAP timeline during deterministic rendering.
+          # The browser-only fallback forces screenshot capture, so strip it from render input.
+          html = html.replace(
+              "if(!window.__hyperframes)requestAnimationFrame(()=>tl.play(0));",
+              ""
+          )
+
           marker = '<div class="frame-shell">'
           clips = []
           for item in manifest['scenes']:
@@ -50,19 +58,30 @@ jobs:
               )
           html = html.replace(marker, '\n'.join(clips) + '\n' + marker, 1)
           path.write_text(html)
-          print(f'Injected {len(clips)} voice clips')
+          print(f'Injected {len(clips)} voice clips and removed browser-only RAF fallback')
           PY
 
       - name: Render MP4
         working-directory: render-kie
+        env:
+          PRODUCER_STREAMING_ENCODE_MAX_DURATION_SECONDS: '600'
         run: |
           npx -y hyperframes@latest doctor
-          npx -y hyperframes@latest render --output ../kie-ai/Kie_AI_Video_Pipeline_True_Pavel.mp4 --fps 24 --quality standard --workers 4
+          npx -y hyperframes@latest render \
+            --output ../kie-ai/Kie_AI_Video_Pipeline_True_Pavel.mp4 \
+            --fps 24 \
+            --quality standard \
+            --workers 2 \
+            --low-memory-mode
 
       - name: Verify MP4
         run: |
           test -s kie-ai/Kie_AI_Video_Pipeline_True_Pavel.mp4
-          ffprobe -v error -show_entries format=duration,size -show_entries stream=codec_name,width,height -of json kie-ai/Kie_AI_Video_Pipeline_True_Pavel.mp4
+          ffprobe -v error \
+            -show_entries format=duration,size \
+            -show_entries stream=codec_name,width,height \
+            -of json \
+            kie-ai/Kie_AI_Video_Pipeline_True_Pavel.mp4
           sha256sum kie-ai/Kie_AI_Video_Pipeline_True_Pavel.mp4 | tee kie-ai/Kie_AI_Video_Pipeline_True_Pavel.mp4.sha256
 
       - name: Upload artifact
