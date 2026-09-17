@@ -74,12 +74,12 @@ jobs:
           lines = []
           for i, snap in enumerate(snaps, start=1):
               lines.append(f'{i:02d}|{snap.as_posix()}|audio/{i:02d}.wav|clips/{i:02d}.mp4')
-          Path('scene-files.txt').write_text('\n'.join(lines))
+          Path('scene-files.txt').write_text('\n'.join(lines) + '\n')
           PY
 
           while IFS='|' read -r N IMG AUDIO OUT; do
             echo "Rendering scene $N"
-            ffmpeg -hide_banner -loglevel error -y \
+            ffmpeg -nostdin -hide_banner -loglevel error -y \
               -loop 1 -framerate 24 -i "$IMG" \
               -i "$AUDIO" \
               -filter_complex "[0:v]scale=1920:1080,zoompan=z='min(zoom+0.00016,1.035)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=480:s=1920x1080:fps=24,fade=t=in:st=0:d=0.25,fade=t=out:st=19.7:d=0.3[v];[1:a]apad=pad_dur=20,atrim=0:20,afade=t=in:st=0:d=0.12,afade=t=out:st=19.65:d=0.25[a]" \
@@ -94,9 +94,9 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          Path('concat.txt').write_text('\n'.join(f"file 'clips/{i:02d}.mp4'" for i in range(1,25)))
+          Path('concat.txt').write_text('\n'.join(f"file 'clips/{i:02d}.mp4'" for i in range(1,25)) + '\n')
           PY
-          ffmpeg -hide_banner -loglevel error -y -f concat -safe 0 -i concat.txt -c copy Kie_AI_Video_Pipeline_True_Pavel_FAST.mp4
+          ffmpeg -nostdin -hide_banner -loglevel error -y -f concat -safe 0 -i concat.txt -c copy Kie_AI_Video_Pipeline_True_Pavel_FAST.mp4
 
       - name: Verify MP4
         working-directory: render-fast
