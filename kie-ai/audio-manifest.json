@@ -1,0 +1,30 @@
+{
+  "voice": "True Pavel",
+  "voice_id": "c008570d33da48d085d3b4133255e551",
+  "scenes": [
+    {"scene":1,"start":0,"duration":12.722,"url":"https://resource2.heygen.ai/text_to_speech/464790954a2d4b9da65ee3ef2a543bbb/c008570d33da48d085d3b4133255e551/id=f817ea8b-3b49-42b6-8bfa-0d6ca0f9a036.wav"},
+    {"scene":2,"start":20,"duration":13.009,"url":"https://resource2.heygen.ai/text_to_speech/464790954a2d4b9da65ee3ef2a543bbb/c008570d33da48d085d3b4133255e551/id=8fbef3a5-c259-474d-86d8-a5276a3e7d45.wav"},
+    {"scene":3,"start":40,"duration":13.688,"url":"https://resource2.heygen.ai/text_to_speech/464790954a2d4b9da65ee3ef2a543bbb/c008570d33da48d085d3b4133255e551/id=36c315fc-cd7e-4288-9174-9c4c1a847d5d.wav"},
+    {"scene":4,"start":60,"duration":15.282,"url":"https://resource2.heygen.ai/text_to_speech/464790954a2d4b9da65ee3ef2a543bbb/c008570d33da48d085d3b4133255e551/id=97a2909f-77e5-45be-a4fe-45c18a597feb.wav"},
+    {"scene":5,"start":80,"duration":16.327,"url":"https://resource2.heygen.ai/text_to_speech/464790954a2d4b9da65ee3ef2a543bbb/c008570d33da48d085d3b4133255e551/id=f174b5d5-de2b-4b9a-8969-71e64266f4cb.wav"},
+    {"scene":6,"start":100,"duration":19.54,"url":"https://resource2.heygen.ai/text_to_speech/464790954a2d4b9da65ee3ef2a543bbb/c008570d33da48d085d3b4133255e551/id=0183dc32-0baf-4310-af7e-8ee4dfbeac95.wav"},
+    {"scene":7,"start":120,"duration":14.942,"url":"https://resource2.heygen.ai/text_to_speech/464790954a2d4b9da65ee3ef2a543bbb/c008570d33da48d085d3b4133255e551/id=40d260b0-068f-474f-8e5b-632520e564b3.wav"},
+    {"scene":8,"start":140,"duration":18.129,"url":"https://resource2.heygen.ai/text_to_speech/464790954a2d4b9da65ee3ef2a543bbb/c008570d33da48d085d3b4133255e551/id=53ad4670-7759-4e30-a84c-f80f1520773a.wav"},
+    {"scene":9,"start":160,"duration":16.248,"url":"https://resource2.heygen.ai/text_to_speech/464790954a2d4b9da65ee3ef2a543bbb/c008570d33da48d085d3b4133255e551/id=2f02f8ba-701d-4768-81ae-a99fbbad6a00.wav"},
+    {"scene":10,"start":180,"duration":12.696,"url":"https://resource2.heygen.ai/text_to_speech/464790954a2d4b9da65ee3ef2a543bbb/c008570d33da48d085d3b4133255e551/id=ca1ee199-8523-4ec0-a856-898235b280fe.wav"},
+    {"scene":11,"start":200,"duration":15.151,"url":"https://resource2.heygen.ai/text_to_speech/464790954a2d4b9da65ee3ef2a543bbb/c008570d33da48d085d3b4133255e551/id=bb446699-2ee6-40a3-9cb5-bb28746be892.wav"},
+    {"scene":12,"start":220,"duration":15.752,"url":"https://resource2.heygen.ai/text_to_speech/464790954a2d4b9da65ee3ef2a543bbb/c008570d33da48d085d3b4133255e551/id=415af359-0891-4103-83cd-12ee159d77f8.wav"},
+    {"scene":13,"start":240,"duration":17.868,"url":"https://resource2.heygen.ai/text_to_speech/464790954a2d4b9da65ee3ef2a543bbb/c008570d33da48d085d3b4133255e551/id=775b8992-195c-4296-a288-03fd9a99bc03.wav"},
+    {"scene":14,"start":260,"duration":15.151,"url":"https://resource2.heygen.ai/text_to_speech/464790954a2d4b9da65ee3ef2a543bbb/c008570d33da48d085d3b4133255e551/id=ecd3e2b0-9fb2-48de-99fd-9d50818cf938.wav"},
+    {"scene":15,"start":280,"duration":17.424,"url":"https://resource2.heygen.ai/text_to_speech/464790954a2d4b9da65ee3ef2a543bbb/c008570d33da48d085d3b4133255e551/id=ff2c564b-8574-421e-8bb9-6dcc4cb56450.wav"},
+    {"scene":16,"start":300,"duration":16.039,"url":"https://resource2.heygen.ai/text_to_speech/464790954a2d4b9da65ee3ef2a543bbb/c008570d33da48d085d3b4133255e551/id=f88df9bd-28da-4eed-a720-3ae9045a76c9.wav"},
+    {"scene":17,"start":320,"duration":18.573,"url":"https://resource2.heygen.ai/text_to_speech/464790954a2d4b9da65ee3ef2a543bbb/c008570d33da48d085d3b4133255e551/id=f9b7608b-b576-46f3-ba9a-ef82c1d997cc.wav"},
+    {"scene":18,"start":340,"duration":17.528,"url":"https://resource2.heygen.ai/text_to_speech/464790954a2d4b9da65ee3ef2a543bbb/c008570d33da48d085d3b4133255e551/id=68eb92df-a493-4480-b88e-aaa879471d63.wav"},
+    {"scene":19,"start":360,"duration":15.543,"url":"https://resource2.heygen.ai/text_to_speech/464790954a2d4b9da65ee3ef2a543bbb/c008570d33da48d085d3b4133255e551/id=937c1cb2-2e29-4207-97a4-477f4bd4d0fa.wav"},
+    {"scene":20,"start":380,"duration":19.67,"url":"https://resource2.heygen.ai/text_to_speech/464790954a2d4b9da65ee3ef2a543bbb/c008570d33da48d085d3b4133255e551/id=619f6b18-c36c-4941-8904-93d8a481c8d3.wav"},
+    {"scene":21,"start":400,"duration":15.491,"url":"https://resource2.heygen.ai/text_to_speech/464790954a2d4b9da65ee3ef2a543bbb/c008570d33da48d085d3b4133255e551/id=8d3a733b-c416-4403-a0a0-8f3a8f9fd2b1.wav"},
+    {"scene":22,"start":420,"duration":15.83,"url":"https://resource2.heygen.ai/text_to_speech/464790954a2d4b9da65ee3ef2a543bbb/c008570d33da48d085d3b4133255e551/id=637233c2-5037-47ec-92e7-4d76127499f6.wav"},
+    {"scene":23,"start":440,"duration":18.834,"url":"https://resource2.heygen.ai/text_to_speech/464790954a2d4b9da65ee3ef2a543bbb/c008570d33da48d085d3b4133255e551/id=1b011c0e-0408-4bd9-b1dd-f06d67b6bbdb.wav"},
+    {"scene":24,"start":460,"duration":19.54,"url":"https://resource2.heygen.ai/text_to_speech/464790954a2d4b9da65ee3ef2a543bbb/c008570d33da48d085d3b4133255e551/id=45c67ca8-ed7e-414d-a493-c1c4ccd110eb.wav"}
+  ]
+}

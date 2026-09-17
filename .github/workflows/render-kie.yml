@@ -1,0 +1,75 @@
+name: Render Kie AI voiced lesson
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'kie-ai/lesson.html'
+      - 'kie-ai/audio-manifest.json'
+      - '.github/workflows/render-kie.yml'
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          node -v
+          ffmpeg -version | head -n 1
+
+      - name: Build voiced HyperFrames composition
+        run: |
+          mkdir -p render-kie
+          cp kie-ai/lesson.html render-kie/index.html
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          manifest = json.loads(Path('kie-ai/audio-manifest.json').read_text())
+          path = Path('render-kie/index.html')
+          html = path.read_text()
+          marker = '<div class="frame-shell">'
+          clips = []
+          for item in manifest['scenes']:
+              clips.append(
+                  f'<audio class="clip" id="voice-{item["scene"]}" '
+                  f'data-start="{item["start"]}" data-duration="{item["duration"]}" '
+                  f'data-track-index="50" data-volume="1" src="{item["url"]}"></audio>'
+              )
+          html = html.replace(marker, '\n'.join(clips) + '\n' + marker, 1)
+          path.write_text(html)
+          print(f'Injected {len(clips)} voice clips')
+          PY
+
+      - name: Render MP4
+        working-directory: render-kie
+        run: |
+          npx -y hyperframes@latest doctor
+          npx -y hyperframes@latest render --output ../kie-ai/Kie_AI_Video_Pipeline_True_Pavel.mp4 --fps 24 --quality standard --workers 4
+
+      - name: Verify MP4
+        run: |
+          test -s kie-ai/Kie_AI_Video_Pipeline_True_Pavel.mp4
+          ffprobe -v error -show_entries format=duration,size -show_entries stream=codec_name,width,height -of json kie-ai/Kie_AI_Video_Pipeline_True_Pavel.mp4
+          sha256sum kie-ai/Kie_AI_Video_Pipeline_True_Pavel.mp4 | tee kie-ai/Kie_AI_Video_Pipeline_True_Pavel.mp4.sha256
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kie-ai-video-pipeline-true-pavel
+          path: |
+            kie-ai/Kie_AI_Video_Pipeline_True_Pavel.mp4
+            kie-ai/Kie_AI_Video_Pipeline_True_Pavel.mp4.sha256
+          retention-days: 7
