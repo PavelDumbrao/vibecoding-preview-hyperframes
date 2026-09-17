@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Hardcoding PRO — Kie.ai + AI Video Pipeline</title>
+</head>
+<body>
+<div data-composition-id="kie-ai-video-pipeline" data-start="0" data-duration="480" data-width="1920" data-height="1080">
+  <div class="frame-shell">
+    <div class="bg-grid"></div>
+    <div class="bg-glow bg-glow-left"></div>
+    <div class="bg-glow bg-glow-right"></div>
+    <div class="rail rail-top"></div>
+    <div class="rail rail-bottom"></div>
+    <div class="timeline-chip">480 СЕК • 24 ГЛАВЫ • HARDCODING PRO</div>
+    <div class="scene-host" id="scene-host"></div>
+  </div>
+</div>
+<style>
+:root{--bg:#111318;--text:#F3EFE6;--accent:#FFB300;--panel:#232833;--muted:#69707D}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif;overflow:hidden}
+[data-composition-id]{position:relative;width:1920px;height:1080px;overflow:hidden;background:radial-gradient(circle at 8% 10%,rgba(255,179,0,.12),transparent 28%),radial-gradient(circle at 90% 80%,rgba(255,179,0,.08),transparent 30%),var(--bg)}
+.frame-shell,.scene-host{position:absolute;inset:0}.bg-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:120px 120px}
+.bg-glow{position:absolute;width:620px;height:620px;border-radius:50%;background:radial-gradient(circle,rgba(255,179,0,.16),transparent 68%);filter:blur(24px)}.bg-glow-left{left:-180px;top:-180px}.bg-glow-right{right:-160px;bottom:-200px}
+.rail{position:absolute;left:120px;right:120px;height:2px;background:var(--accent);opacity:.22}.rail-top{top:108px}.rail-bottom{bottom:100px}
+.timeline-chip{position:absolute;z-index:10;left:120px;top:54px;border:1px solid rgba(255,179,0,.3);padding:14px 18px;color:var(--accent);font:18px "JetBrains Mono",monospace;letter-spacing:.08em}
+.scene{position:absolute;inset:0;opacity:0}.scene.initial-scene{opacity:1}.scene-content{display:flex;flex-direction:column;width:100%;height:100%;padding:150px 120px 132px;gap:24px}
+.scene-kicker,.scene-meta,.card-index{font-family:"JetBrains Mono",monospace;text-transform:uppercase;letter-spacing:.06em}.scene-kicker{font-size:22px;color:var(--accent)}
+.title-row{display:flex;justify-content:space-between;align-items:flex-end;gap:40px}.scene-title{margin:0;max-width:1450px;font-size:82px;line-height:.96;letter-spacing:-.04em;font-weight:900}.scene-meta{font-size:22px;color:rgba(243,239,230,.7);white-space:nowrap}
+.scene-copy{margin:0;max-width:1500px;font-size:34px;line-height:1.3;color:rgba(243,239,230,.9)}.card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:10px}.scene-card{min-height:220px;padding:28px;background:rgba(35,40,51,.96);border:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;justify-content:flex-end}.card-index{font-size:18px;color:var(--accent);margin-bottom:auto}.scene-card h3{margin:0;font-size:40px;line-height:1.05;letter-spacing:-.03em}
+.scene[data-kind="hero"] .scene-title{font-size:118px;max-width:1570px}.scene[data-kind="hero"] .scene-copy{font-size:39px}.scene[data-kind="final"] .scene-card{border-color:rgba(255,179,0,.28);background:linear-gradient(180deg,rgba(255,179,0,.1),rgba(35,40,51,.96))}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<script>
+const scenes=[
+['СТАРТ','Что сегодня строим','Codex, Claude Code и Hermes получают Kie.ai как инструмент и собирают первое AI-видео по повторяемому процессу.',['3 агента','1 media API','1 повторяемый workflow']],
+['КАРТА','Вся система за 20 секунд','Человек ставит задачу. Агент работает через компьютер или VPS. MCP/API соединяет его с Kie.ai. На выходе появляется медиа.',['человек → агент','агент → Kie.ai','Kie.ai → результат']],
+['ТЕРМИНЫ','API, MCP, Skill — не одно и то же','API — способ разговаривать с сервисом. MCP — набор инструментов для агента. Skill — инструкция, как пользоваться инструментами правильно.',['API = связь','MCP = инструменты','Skill = навык']],
+['ТЕРМИНЫ','Pipeline и Workflow простыми словами','Pipeline — конвейер шагов. Workflow — рабочий сценарий целиком, включая проверки, память, ошибки и возвраты на предыдущие этапы.',['pipeline = 1→2→3','workflow = весь процесс','повторяемость']],
+['МОСТ','Подключаем агента к машине','Remote Desktop Commander связывает ChatGPT с Mac, Windows или VPS. Агент получает реальное рабочее окружение.',['Mac / Windows','VPS','Remote bridge']],
+['ОКРУЖЕНИЕ','Один раз изучаем машину','Агент проверяет ОС, Git, Node.js, Python, Docker и структуру проектов, затем сохраняет карту окружения.',['inspect once','remember','reuse']],
+['RESEARCH ONCE','Главное правило урока','Новую сложную тему агент исследует один раз, проверяет практикой и сохраняет как knowledge или skill.',['исследовать','проверить','сохранить']],
+['KIE.AI','Даём агенту официальный контекст','Сначала агент читает документацию Kie.ai: модели, task API, upload, polling, ограничения и ответы сервера.',['docs first','no guessing','current API']],
+['SECURITY','API key не отправляем в чат','Ключ передаётся через безопасный одноразовый bridge или локальную форму и никогда не печатается агентом.',['no chat secrets','one-time bridge','test auth']],
+['SMOKE TEST','Сначала дешёвый smoke test','До сложного видео агент проверяет авторизацию, баланс и одну дешёвую генерацию.',['auth','balance','cheap test']],
+['MCP','Не пишем интеграцию с нуля','Сначала агент ищет готовые MCP и skills, сравнивает свежесть, модели, security и качество реализации.',['audit repos','compare','choose']],
+['REPOSITORIES','Примеры готовых репозиториев','Стартовые кандидаты для аудита: kie-cli-mcp, ai-video-skill, ai-video-storyboard-skill и video-to-skill.',['felores/kie-cli-mcp','ai-video-skill','storyboard-skill']],
+['3 AGENTS','Codex, Claude Code и Hermes','Один Kie.ai tool layer подключается к разным агентам. Их память разная, поэтому знания фиксируем отдельно.',['Codex','Claude Code','Hermes']],
+['DECOMPOSE','Не говорим просто: сделай видео','Большую задачу делим на персонажа, раскадровку, сценарий, модель, model-specific prompt, генерацию и QA.',['decompose','measure','repeat']],
+['IDENTITY','Сначала фиксируем идентичность','Главный reference превращаем в Identity Card: лицо, голова, волосы, борода, возраст, комплекция, одежда.',['identity card','do not drift','same person']],
+['CONSISTENCY','Исследуем постоянство персонажа один раз','Если лицо плывёт, агент исследует character consistency, обновляет правила и сохраняет решение в skill.',['research cause','update skill','retry']],
+['N=9','Строим storyboard из 9 кадров','N=9 — девять отдельных референсов одной сцены. Меняются ракурс и действие, но герой и визуальный мир стабильны.',['9 frames','same identity','different angles']],
+['СЦЕНАРИЙ','Пишем 10 секунд действия','Сценарий описывает движение героя, камеру, реплику, фон и финальное действие. Это ещё не prompt видеомодели.',['0–3 сек','3–7 сек','7–10 сек']],
+['МОДЕЛЬ','Проверяем актуальную видеомодель','Перед генерацией агент сверяет Kie.ai: точный model ID, duration, reference mode, resolution и ограничения.',['model ID','duration','reference mode']],
+['H3 RESEARCH','Один раз изучаем MiniMax H3','Агент исследует prompt format именно H3: движение, camera language, reference images, речь и параметры.',['model-specific','official docs','creator practice']],
+['PROMPT','Сценарий превращаем в production prompt','Production prompt учитывает синтаксис и возможности выбранной модели. Он не равен человеческому сценарию.',['scenario ≠ prompt','model-specific','structured']],
+['GENERATE','Запускаем задачу и ждём правильно','Агент загружает 9 refs, создаёт task, сохраняет Task ID, делает polling и забирает готовый результат.',['upload refs','Task ID','poll → result']],
+['QA LOOP','ИИ сам проверяет, что получилось','После генерации агент проверяет identity, руки, речь, camera motion, continuity и соответствие сценарию.',['inspect','diagnose','improve']],
+['ФИНАЛ','Сохраняем весь процесс как skill','Рабочая версия становится reusable workflow: reference → N=9 → script → model research → prompt → generation → QA.',['research once','remember forever','content factory']]
+];
+const host=document.getElementById('scene-host');
+const fmt=s=>{const m=Math.floor(s/60),r=s%60;return `${String(m).padStart(2,'0')}:${String(r).padStart(2,'0')}`};
+scenes.forEach((s,i)=>{const start=i*20,end=start+20;const el=document.createElement('section');el.className='scene '+(i===0?'initial-scene ':'');el.id=`scene-${i+1}`;el.dataset.kind=i===0?'hero':i===23?'final':'standard';el.innerHTML=`<div class="scene-content"><div class="scene-kicker">ГЛАВА ${String(i+1).padStart(2,'0')} • ${s[0]}</div><div class="title-row"><h2 class="scene-title">${s[1]}</h2><div class="scene-meta">${fmt(start)}–${fmt(end)}</div></div><p class="scene-copy">${s[2]}</p><div class="card-grid">${s[3].map((x,j)=>`<article class="scene-card"><div class="card-index">${String(j+1).padStart(2,'0')}</div><h3>${x}</h3></article>`).join('')}</div></div>`;host.appendChild(el)});
+window.__timelines=window.__timelines||{};const tl=gsap.timeline({paused:true});const ids=scenes.map((_,i)=>`scene-${i+1}`),L=20;
+tl.to('.bg-glow-left',{x:90,y:50,duration:18,repeat:26,yoyo:true,ease:'sine.inOut'},0);tl.to('.bg-glow-right',{x:-80,y:-40,duration:22,repeat:21,yoyo:true,ease:'sine.inOut'},0);
+function enter(id,s){tl.set('#'+id,{opacity:1,x:0,filter:'blur(0px)'},s);tl.from('#'+id+' .scene-kicker',{y:18,opacity:0,duration:.35,ease:'power2.out'},s+.2);tl.from('#'+id+' .scene-title',{y:56,opacity:0,duration:.7,ease:'expo.out'},s+.35);tl.from('#'+id+' .scene-meta',{x:18,opacity:0,duration:.35},s+.52);tl.from('#'+id+' .scene-copy',{y:28,opacity:0,duration:.5},s+.7);tl.from('#'+id+' .scene-card',{y:34,opacity:0,duration:.48,stagger:.09,ease:'power4.out'},s+1)}
+function trans(a,b,t){tl.to('#'+a,{x:-120,opacity:0,filter:'blur(10px)',duration:.6,ease:'power3.inOut'},t);tl.fromTo('#'+b,{x:140,opacity:0,filter:'blur(10px)'},{x:0,opacity:1,filter:'blur(0px)',duration:.6,ease:'power3.out'},t)}
+ids.forEach((id,i)=>{const s=i*L;enter(id,s);if(i<ids.length-1)trans(id,ids[i+1],s+L-.9)});tl.to('#scene-24',{opacity:0,filter:'blur(10px)',duration:.8},479);window.__timelines['kie-ai-video-pipeline']=tl;if(!window.__hyperframes)requestAnimationFrame(()=>tl.play(0));
+</script>
+</body>
+</html>
