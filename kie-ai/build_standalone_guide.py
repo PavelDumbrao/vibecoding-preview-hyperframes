@@ -1,114 +1,93 @@
 from pathlib import Path
-import base64
+import base64, html as h
 
-ROOT = Path.cwd()
-TEMPLATE = ROOT / 'work' / 'guide-template.html'
-VIDEO = ROOT / 'input-video' / 'Kie_AI_Video_Pipeline_True_Pavel.mp4'
-MUSIC = ROOT / 'work' / 'hardcoding_ai_ambient.mp3'
-POSTER = ROOT / 'work' / 'poster.jpg'
-OUT = ROOT / 'dist' / 'Hardcoding_PRO_Kie_AI_Video_Guide_FINAL.html'
+ROOT=Path.cwd()
+VIDEO=ROOT/'input-video'/'Kie_AI_Video_Pipeline_True_Pavel.mp4'
+MUSIC=ROOT/'work'/'hardcoding_ai_ambient.mp3'
+POSTER=ROOT/'work'/'poster.jpg'
+OUT=ROOT/'dist'/'Hardcoding_PRO_Kie_AI_Video_Guide_FINAL.html'
 
-html = TEMPLATE.read_text(encoding='utf-8')
-video_b64 = base64.b64encode(VIDEO.read_bytes()).decode('ascii')
-music_b64 = base64.b64encode(MUSIC.read_bytes()).decode('ascii')
-poster_b64 = base64.b64encode(POSTER.read_bytes()).decode('ascii')
+video_b64=base64.b64encode(VIDEO.read_bytes()).decode()
+music_b64=base64.b64encode(MUSIC.read_bytes()).decode()
+poster_b64=base64.b64encode(POSTER.read_bytes()).decode()
 
-extra_css = r'''
-.video-hub{background:#0f0e0c;color:white;border-radius:28px;padding:18px;margin:14px 0;box-shadow:var(--shadow);border:1px solid #2a251e;overflow:hidden}.video-hub h2{color:white;margin-bottom:8px}.video-hub .sub{color:#cfc7bc;margin:0 0 16px}.video-shell{background:#000;border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,.14);box-shadow:0 18px 45px rgba(0,0,0,.28)}.video-shell video{display:block;width:100%;height:auto;aspect-ratio:16/9;background:#000}.media-bar{display:grid;grid-template-columns:1fr;gap:10px;margin-top:12px}.music-box{background:#1a1713;border:1px solid #383129;border-radius:16px;padding:13px}.music-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.music-btn{appearance:none;border:1px solid #5a4b3d;background:#ff7a1a;color:#1b1109;border-radius:12px;padding:10px 13px;font-weight:850;cursor:pointer;touch-action:manipulation}.music-btn.secondary{background:#24201a;color:#fff}.music-box audio{width:100%;margin-top:10px;height:34px}.volume{display:flex;gap:9px;align-items:center;color:#d6cec2;font-size:12px}.volume input{width:110px}.chapter-grid{display:grid;grid-template-columns:1fr;gap:8px;margin-top:14px}.chapter{appearance:none;text-align:left;width:100%;border:1px solid #d9ccba;background:#fffdf8;color:#211b14;border-radius:14px;padding:11px 12px;cursor:pointer;display:flex;gap:10px;align-items:flex-start;touch-action:manipulation}.chapter:hover,.chapter.active{border-color:#ff7a1a;box-shadow:0 0 0 2px rgba(255,122,26,.12)}.chapter .ct{font:800 11px/1.2 var(--mono);color:#a34d0f;min-width:44px}.chapter .ttl{font-size:13px;font-weight:760;line-height:1.25}.quick-start{display:grid;grid-template-columns:1fr;gap:8px;margin-top:12px}.quick-start .q{background:#fff;border:1px solid var(--line);border-radius:14px;padding:13px;color:#17140f}.quick-start .q b{color:#9b4b13}.video-note{background:#201b16;border:1px solid #4a3d31;border-radius:14px;padding:12px 13px;color:#d8d0c4;margin-top:12px;font-size:13px}.progress-wrap{height:5px;background:#2b261f;border-radius:999px;overflow:hidden;margin:10px 0 0}.progress-bar{height:100%;width:0;background:#ff7a1a}.hero .watch-now{display:inline-flex;margin-top:18px;text-decoration:none;background:#ff7a1a;color:#1c1008;padding:11px 15px;border-radius:12px;font-weight:900;position:relative;z-index:2}.player-kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:12px}.player-kpis .pk{background:#191612;border:1px solid #352e26;border-radius:13px;padding:10px}.pk b{display:block;color:#ffb376;font:900 18px/1 var(--mono)}.pk span{font-size:11px;color:#bbb1a4}@media(min-width:720px){.media-bar{grid-template-columns:1.2fr .8fr}.chapter-grid{grid-template-columns:repeat(2,1fr)}.quick-start{grid-template-columns:repeat(3,1fr)}.player-kpis{grid-template-columns:repeat(4,1fr)}}
+chapters=[
+('00:00','Что сегодня строим',0),('00:20','Вся система за 20 секунд',20),('00:40','API, MCP и Skill - это разное',40),('01:00','Pipeline и Workflow',60),
+('01:20','Подключаем агента к машине',80),('01:40','Один раз изучаем окружение',100),('02:00','Research once',120),('02:20','Официальный контекст Kie.ai',140),
+('02:40','API key не отправляем в чат',160),('03:00','Дешёвый smoke test',180),('03:20','Не пишем интеграцию с нуля',200),('03:40','Готовые MCP и skills',220),
+('04:00','Codex, Claude Code и Hermes',240),('04:20','Декомпозируем задачу',260),('04:40','Фиксируем identity',280),('05:00','Character consistency',300),
+('05:20','Storyboard N=9',320),('05:40','Сценарий 10 секунд',340),('06:00','Проверяем видеомодель',360),('06:20','MiniMax H3 research',380),
+('06:40','Production prompt',400),('07:00','Task + polling',420),('07:20','Video QA',440),('07:40','Сохраняем reusable skill',460),]
+chapters_html=''.join(f'<button class="chapter" data-time="{s}"><b>{t}</b><span>{h.escape(n)}</span></button>' for t,n,s in chapters)
+
+def prompt(title, text, pid):
+    return f'''<div class="prompt"><div class="ph"><b>{h.escape(title)}</b><button data-copy="{pid}">Скопировать</button></div><textarea id="{pid}" readonly>{h.escape(text)}</textarea></div>'''
+
+p_bridge=prompt('PROMPT 01 · execution bridge', '''Проверь, что ты реально видишь мой компьютер или VPS через доступный execution bridge.
+Пока ничего не меняй.
+1. Подтверди соединение.
+2. Покажи безопасную информацию об окружении.
+3. Если связи нет, найди root cause.
+4. Не проси меня вручную делать то, что можешь проверить сам.''','p1')
+p_inventory=prompt('PROMPT 02 · inventory окружения', '''Изучи рабочее окружение один раз: ОС, Git, Node.js, Python, Docker, FFmpeg, проекты, доступ к сети и место для secrets.
+Ничего не удаляй. Секреты не показывай.
+После проверки сохрани только стабильные факты в постоянный project context.''','p2')
+p_research=prompt('MASTER PROMPT · RESEARCH ONCE', '''В проекте действует правило RESEARCH ONCE → VERIFY → APPLY → SAVE → REUSE.
+Перед новой моделью, API, MCP или skill сначала проверь, не исследовали ли мы это уже.
+Если знания нет или версия изменилась, изучи официальные docs, проверь факты реальным минимальным тестом и сохрани рабочие параметры, ограничения, ссылки, ошибки и критерий успеха.
+Не сохраняй догадки как факты. Не повторяй одно и то же исследование в новом чате без причины.''','p3')
+p_kie=prompt('PROMPT 03 · Kie.ai research', '''Изучи Kie.ai как основной media API provider.
+Первоисточники: https://docs.kie.ai/ и https://kie.ai/market
+Разберись с auth, async task creation, polling, file upload/reference URLs, result URLs, rate limits, balance/credits и retention.
+Пока ничего платного не запускай. После исследования сохрани карту Kie.ai в project knowledge.''','p4')
+p_secret=prompt('PROMPT 04 · безопасный API key', '''Мне нужно подключить Kie.ai API key.
+Не проси присылать секрет в чат. Не печатай его. Не клади в Git. Не передавай через URL/query или shell argv.
+Используй существующий безопасный secret handoff / env storage. После сохранения проверь только факт авторизации.''','p5')
+p_mcp=prompt('PROMPT 05 · аудит MCP/skills', '''Найди актуальные CLI/MCP/skills для Kie.ai. Начни с https://github.com/felores/kie-cli-mcp и найди более свежие варианты.
+Не устанавливай сразу. Проверь свежесть, модельный coverage, secrets, destructive commands, совместимость с Codex/Claude Code/Hermes и соответствие текущему Kie.ai API.
+После аудита выбери минимальный вариант интеграции.''','p6')
+p_video=prompt('PROMPT 06 · первое AI-видео', '''Собери первое AI-видео как production pipeline, а не одной командой.
+1. Зафиксируй identity card персонажа.
+2. Создай 9 отдельных reference frames с тем же человеком.
+3. Напиши timeline на 10 секунд.
+4. Проверь актуальную модель и её точный model ID.
+5. Отдельно изучи model-specific prompting.
+6. Собери production prompt.
+7. Покажи мне refs, prompt, параметры и ожидаемый cost до запуска.
+8. Создай task, сохрани Task ID, делай polling без спама.
+9. Скачай результат.
+10. Проведи video QA и сохрани подтверждённые lessons learned.''','p7')
+p_memory=prompt('PROMPT 07 · сохранить систему', '''Сделай Kie.ai + AI Video Production постоянной частью текущего агента.
+Сохрани: короткие stable rules, reusable skills и отдельный knowledge/lessons layer.
+Минимальные skills: KIE_AI_INTEGRATION, IMAGE_REFERENCE_CONSISTENCY, STORYBOARD_N9, MINIMAX_H3_VIDEO, VIDEO_QA.
+Не складывай всё в один гигантский instruction-файл. Проверь новой сессией, что знания реально находятся.''','p8')
+
+css='''
+:root{--bg:#f5efe4;--paper:#fffaf1;--ink:#17140f;--muted:#71685c;--line:#dfd2bf;--dark:#12100d;--orange:#ff7a1a;--green:#2e7d5b;--mono:ui-monospace,SFMono-Regular,Menlo,monospace}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 0 0,#fff8e8,transparent 30%),var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.55;padding-bottom:92px;overflow-x:hidden}main{width:min(980px,100%);margin:auto;padding:14px}.hero,.video{border-radius:28px;background:linear-gradient(145deg,#12100d,#2a2118);color:#fff;padding:25px 20px;margin:8px 0 14px;box-shadow:0 18px 50px rgba(48,35,18,.12)}.eyebrow{font:800 11px var(--mono);letter-spacing:.1em;color:#ffbf8b}.hero h1{font-size:clamp(34px,8vw,64px);line-height:1;letter-spacing:-.045em;margin:12px 0}.hero p,.sub{color:#d7cfc4}.badges{display:flex;gap:7px;flex-wrap:wrap}.badge{padding:7px 10px;border:1px solid #443a30;border-radius:999px;background:#211c17;font-size:12px}.cta{display:inline-block;margin-top:16px;background:var(--orange);color:#1a1008;text-decoration:none;font-weight:900;padding:11px 14px;border-radius:12px}.section{background:rgba(255,250,241,.96);border:1px solid var(--line);border-radius:22px;padding:20px 17px;margin:14px 0;box-shadow:0 8px 26px rgba(48,35,18,.05)}h2{font-size:29px;line-height:1.08;margin:0 0 12px}h3{font-size:20px;margin:22px 0 8px}.lead{font-size:18px}.muted{color:var(--muted)}.video-shell{background:#000;border-radius:18px;overflow:hidden;border:1px solid #3c332b}.video video{display:block;width:100%;aspect-ratio:16/9;background:#000}.progress{height:5px;background:#2b261f;border-radius:99px;margin-top:9px;overflow:hidden}.progress i{display:block;height:100%;width:0;background:var(--orange)}.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:12px 0}.kpi{background:#1b1713;border:1px solid #3a3128;padding:10px;border-radius:13px}.kpi b{display:block;color:#ffb376;font:900 18px var(--mono)}.kpi span{font-size:11px;color:#bdb3a7}.music{background:#1a1713;border:1px solid #3c332b;border-radius:16px;padding:13px;margin-top:10px}.music-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.btn{border:1px solid #5b4b3d;background:var(--orange);color:#1b1008;border-radius:11px;padding:9px 11px;font-weight:850;cursor:pointer}.btn.alt{background:#27211b;color:#fff}.music audio{width:100%;margin-top:9px;height:34px}.chapter-grid{display:grid;grid-template-columns:1fr;gap:8px}.chapter{text-align:left;border:1px solid var(--line);background:#fff;border-radius:13px;padding:10px;display:flex;gap:10px;cursor:pointer}.chapter b{font:800 11px var(--mono);color:#a64c0c;min-width:44px}.chapter span{font-size:13px;font-weight:720}.chapter.active{border-color:var(--orange);box-shadow:0 0 0 2px rgba(255,122,26,.13)}.grid{display:grid;grid-template-columns:1fr;gap:9px}.card{background:#fff;border:1px solid var(--line);border-radius:15px;padding:14px}.card b{color:#87450f}.flow{display:flex;gap:7px;overflow-x:auto}.flow .node{min-width:155px;background:#17140f;color:#fff;border-radius:14px;padding:12px}.flow .node b{display:block;color:#ffb376}.callout{border-left:5px solid var(--orange);background:#fff1df;border-radius:0 14px 14px 0;padding:12px 14px;margin:12px 0}.callout.green{border-color:var(--green);background:#eaf6ef}.prompt{background:#17140f;border:1px solid #312b23;border-radius:17px;overflow:hidden;margin:13px 0}.ph{padding:10px 11px;border-bottom:1px solid #373128;color:#fff;display:flex;justify-content:space-between;gap:8px;align-items:center}.ph b{font:800 11px var(--mono);color:#ffc28f}.ph button{border:1px solid #5b4f42;background:#29231d;color:#fff;border-radius:9px;padding:7px 9px;font-weight:800}.prompt textarea{display:block;width:100%;min-height:220px;max-height:480px;border:0;resize:vertical;background:#17140f;color:#f4ede4;padding:14px;font:13px/1.55 var(--mono)}.check{display:flex;gap:9px;padding:8px 0}.box{width:19px;height:19px;border:2px solid #b6aa99;border-radius:6px;background:#fff;flex:0 0 auto}.links a{display:block;padding:7px 0;word-break:break-all}.fixed{position:fixed;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:30;text-align:center}.fixed a{display:block;max-width:680px;margin:auto;background:#17140f;color:#fff;border:1px solid #42382e;border-radius:15px;padding:13px;text-decoration:none;font-weight:900;box-shadow:0 12px 30px rgba(0,0,0,.22)}@media(min-width:720px){main{padding:22px}.hero,.video{padding:38px 34px}.section{padding:27px 29px}.grid.two{grid-template-columns:repeat(2,1fr)}.grid.three{grid-template-columns:repeat(3,1fr)}.chapter-grid{grid-template-columns:repeat(2,1fr)}.kpis{grid-template-columns:repeat(4,1fr)}}
 '''
-html = html.replace('</style>', extra_css + '\n</style>', 1)
-html = html.replace('Hardcoding PRO · офлайн-гайд · урок 17.09.2026', 'Hardcoding PRO · видео + практический гайд · 17.09.2026', 1)
-html = html.replace('<span class="badge"><strong>Источник:</strong> запись урока + актуальные docs</span>', '<span class="badge"><strong>Видео:</strong> 8:00 · Full HD</span>\n    <span class="badge"><strong>Музыка:</strong> встроена в HTML</span>', 1)
-hero_close = html.find('</section>')
-if hero_close != -1:
-    html = html[:hero_close] + '<a class="watch-now" href="#video">▶ Смотреть 8-минутный урок</a>\n' + html[hero_close:]
 
-chapters = [
-('00:00','Что сегодня строим',0),('00:20','Вся система за 20 секунд',20),('00:40','API, MCP и Skill - это разное',40),('01:00','Pipeline и Workflow простыми словами',60),
-('01:20','Подключаем агента к машине',80),('01:40','Один раз изучаем окружение',100),('02:00','Главное правило урока: research once',120),('02:20','Даём агенту официальный контекст',140),
-('02:40','API key не отправляем в чат',160),('03:00','Сначала дешёвый smoke test',180),('03:20','Не пишем интеграцию с нуля',200),('03:40','Готовые репозитории и skills',220),
-('04:00','Codex, Claude Code и Hermes',240),('04:20','Не говорим просто «сделай видео»',260),('04:40','Фиксируем identity персонажа',280),('05:00','Исследуем character consistency',300),
-('05:20','Строим storyboard из 9 кадров',320),('05:40','Пишем 10 секунд действия',340),('06:00','Проверяем актуальную видеомодель',360),('06:20','Один раз изучаем MiniMax H3',380),
-('06:40','Сценарий превращаем в production prompt',400),('07:00','Запускаем task и делаем polling',420),('07:20','ИИ сам проверяет результат',440),('07:40','Сохраняем процесс как reusable skill',460),
-]
-chapter_html='\n'.join([f'<button class="chapter" data-time="{sec}"><span class="ct">{ts}</span><span class="ttl">{title}</span></button>' for ts,title,sec in chapters])
-
-media_section = f'''
-<section class="video-hub" id="video">
-  <div class="eyebrow">ВИДЕО УРОК · 8 МИНУТ · ВСТРОЕН В ФАЙЛ</div>
-  <h2>Сначала посмотри урок. Потом проходи гайд по шагам.</h2>
-  <p class="sub">Видео и музыка физически находятся внутри этого HTML. Никаких внешних ссылок для воспроизведения не нужно.</p>
-  <div class="video-shell">
-    <video id="lessonVideo" controls playsinline preload="metadata" poster="data:image/jpeg;base64,{poster_b64}">
-      <source src="data:video/mp4;base64,{video_b64}" type="video/mp4">
-      Ваш браузер не поддерживает встроенное видео.
-    </video>
-  </div>
-  <div class="progress-wrap"><div class="progress-bar" id="lessonProgress"></div></div>
-  <div class="player-kpis">
-    <div class="pk"><b>8:00</b><span>длина урока</span></div>
-    <div class="pk"><b>24</b><span>смысловых блока</span></div>
-    <div class="pk"><b>1080p</b><span>разрешение</span></div>
-    <div class="pk"><b>1 файл</b><span>видео + гайд + музыка</span></div>
-  </div>
-  <div class="media-bar">
-    <div class="music-box">
-      <b>🎵 Фоновая музыка</b>
-      <p class="tiny" style="color:#cfc7bc;margin:6px 0 10px">Оригинальный спокойный AI-ambient. По умолчанию выключен, потому что браузеры блокируют autoplay. Нажми кнопку, если хочешь фон во время чтения.</p>
-      <div class="music-row">
-        <button class="music-btn" id="musicToggle" type="button">▶ Включить музыку</button>
-        <button class="music-btn secondary" id="musicStop" type="button">■ Стоп</button>
-        <label class="volume">Громкость <input id="musicVolume" type="range" min="0" max="1" step="0.01" value="0.14"></label>
-      </div>
-      <audio id="guideMusic" controls loop preload="auto" src="data:audio/mpeg;base64,{music_b64}"></audio>
-    </div>
-    <div class="music-box">
-      <b>Как проходить этот материал</b>
-      <div class="quick-start">
-        <div class="q"><b>1. Посмотри</b><br><span class="tiny">8 минут целиком, чтобы увидеть систему.</span></div>
-        <div class="q"><b>2. Делай</b><br><span class="tiny">Иди по секциям ниже и запускай промпты.</span></div>
-        <div class="q"><b>3. Проверяй</b><br><span class="tiny">Не верь слову «готово», требуй фактический output.</span></div>
-      </div>
-    </div>
-  </div>
-  <div class="video-note"><b>Важно:</b> в видео показан конкретный execution bridge. Если у тебя другой способ дать агенту доступ к компьютеру или VPS, принцип не меняется: агент должен уметь сам работать с реальным окружением, проверять результат и сохранять рабочий контекст.</div>
-</section>
-
-<section class="section" id="chapters">
-  <h2>Таймкоды урока</h2>
-  <p class="lead">Нажми на нужный блок, видео выше сразу перемотается на этот момент.</p>
-  <div class="chapter-grid">{chapter_html}</div>
-</section>
+body=f'''
+<main>
+<section class="hero"><div class="eyebrow">HARDCODING PRO · ВИДЕО + ГАЙД · 17.09.2026</div><h1>Kie.ai + coding agents. От подключения до первого AI-видео.</h1><p>Один автономный файл: полноценный 8-минутный урок, пошаговый workflow, готовые промпты, чек-лист и фоновая музыка.</p><div class="badges"><span class="badge">Видео 8:00</span><span class="badge">Full HD 1080p</span><span class="badge">24 таймкода</span><span class="badge">Музыка внутри HTML</span></div><a class="cta" href="#video">▶ Смотреть урок</a></section>
+<section class="video" id="video"><div class="eyebrow">ВИДЕО ФИЗИЧЕСКИ ВСТРОЕНО В HTML</div><h2>Сначала посмотри. Потом делай.</h2><p class="sub">Файл не зависит от внешнего видеохостинга. Видео и музыка зашиты прямо внутрь.</p><div class="video-shell"><video id="lessonVideo" controls playsinline preload="metadata" poster="data:image/jpeg;base64,{poster_b64}"><source src="data:video/mp4;base64,{video_b64}" type="video/mp4"></video></div><div class="progress"><i id="progress"></i></div><div class="kpis"><div class="kpi"><b>8:00</b><span>урок</span></div><div class="kpi"><b>24</b><span>главы</span></div><div class="kpi"><b>1080p</b><span>качество</span></div><div class="kpi"><b>1</b><span>автономный файл</span></div></div><div class="music"><b>🎵 Фоновая музыка</b><p class="sub">Включается вручную. При запуске видео автоматически приглушается.</p><div class="music-row"><button class="btn" id="musicToggle">▶ Включить</button><button class="btn alt" id="musicStop">■ Стоп</button><label>Громкость <input id="musicVolume" type="range" min="0" max="1" step="0.01" value="0.14"></label></div><audio id="guideMusic" controls loop preload="auto" src="data:audio/mpeg;base64,{music_b64}"></audio></div></section>
+<section class="section"><h2>Таймкоды</h2><p class="lead">Нажми на главу, видео перемотается на нужный момент.</p><div class="chapter-grid">{chapters_html}</div></section>
+<section class="section"><h2>1. Система целиком</h2><div class="flow"><div class="node"><b>Человек</b>ставит задачу</div><div class="node"><b>AI-агент</b>планирует и исполняет</div><div class="node"><b>Execution bridge</b>даёт доступ к ПК/VPS</div><div class="node"><b>Kie.ai</b>генерирует медиа</div><div class="node"><b>QA + memory</b>закрывают цикл</div></div><div class="callout"><b>API</b> это способ разговаривать с сервисом. <b>MCP</b> это инструменты, которые видит агент. <b>Skill</b> это инструкция, как этими инструментами пользоваться правильно.</div></section>
+<section class="section"><h2>2. Сначала даём агенту руки</h2><p>Название конкретного моста вторично. Главное, чтобы coding agent реально мог читать файлы, запускать shell, работать с Git и проверять результат на твоей машине или VPS.</p>{p_bridge}{p_inventory}</section>
+<section class="section"><h2>3. Главное правило: Research Once</h2><p class="lead">Новая модель или API не должны каждый раз изучаться с нуля. Исследование превращается в reusable knowledge.</p><div class="grid three"><div class="card"><b>RESEARCH</b><br>официальные docs и repo</div><div class="card"><b>VERIFY</b><br>реальный минимальный тест</div><div class="card"><b>SAVE</b><br>skill + lessons + версии</div></div>{p_research}</section>
+<section class="section"><h2>4. Подключаем Kie.ai</h2><div class="grid two"><div class="card"><b>Что изучить</b><br>auth, tasks, polling, uploads, result URLs, balance, rate limits.</div><div class="card"><b>Что запрещено</b><br>секреты в чате, Git, query string и логах.</div></div>{p_kie}{p_secret}<div class="callout green"><b>Smoke test:</b> сначала авторизация, баланс и минимальная дешёвая операция. Если база не работает, не идём в сложное видео.</div></section>
+<section class="section"><h2>5. Не изобретаем MCP с нуля</h2><p>Сначала ищем готовое, затем проверяем свежесть и только потом устанавливаем.</p>{p_mcp}<div class="grid two"><div class="card"><b>Kie CLI/MCP</b><br>https://github.com/felores/kie-cli-mcp</div><div class="card"><b>Video learning loop</b><br>https://github.com/0xadvait/ai-video-skill</div></div></section>
+<section class="section"><h2>6. Первый AI-video pipeline</h2><div class="grid two"><div class="card"><b>1. Identity card</b><br>лицо, форма головы, волосы, борода, возраст, телосложение, одежда, запреты.</div><div class="card"><b>2. Storyboard N=9</b><br>девять отдельных кадров одной сцены, тот же персонаж и мир, разные ракурсы.</div><div class="card"><b>3. Timeline 10 сек</b><br>0-3, 3-7, 7-10: действие, камера, реплика, финал.</div><div class="card"><b>4. Model research</b><br>точный model ID, refs, duration, resolution, ограничения.</div><div class="card"><b>5. Production prompt</b><br>сценарий переводится в синтаксис конкретной модели.</div><div class="card"><b>6. QA loop</b><br>identity, руки, речь, камера, continuity, соответствие сценарию.</div></div>{p_video}</section>
+<section class="section"><h2>7. После первой генерации</h2><p>Не повторяем случайный retry. Ошибка становится входом в research loop, а рабочее решение становится skill.</p>{p_memory}</section>
+<section class="section"><h2>8. Чего не делать</h2><div class="grid two"><div class="card"><b>Не «сделай красиво»</b><br>без контекста, refs и критериев.</div><div class="card"><b>Не повторяй research</b><br>если версия и API не изменились.</div><div class="card"><b>Не трать credits вслепую</b><br>сначала plan, refs, prompt, параметры, cost.</div><div class="card"><b>Не верь слову «готово»</b><br>нужен фактический файл и QA.</div></div></section>
+<section class="section" id="check"><h2>9. Финальный чек-лист</h2>{''.join(f'<div class="check"><span class="box"></span><span>{x}</span></div>' for x in ['Агент реально работает с ПК или VPS.','Окружение изучено и сохранено.','Research Once Protocol закреплён.','Kie.ai auth и balance проверены.','API key хранится безопасно.','MCP/CLI выбран после аудита.','Есть identity card персонажа.','Есть 9 reference frames.','Есть сценарий 10 секунд.','Точная видеомодель и параметры проверены.','Перед запуском показаны prompt, refs, params и cost.','Task ID сохранён, polling работает.','Видео скачано и проверено.','Lessons learned сохранены.'])}<div class="callout green"><b>Результат:</b> не случайный ролик, а повторяемый content factory workflow.</div></section>
+<section class="section"><h2>10. Домашнее задание</h2><div class="grid three"><div class="card"><b>Своё лицо</b><br>повтори pipeline со своим reference и добейся стабильной identity.</div><div class="card"><b>Talking avatar</b><br>исследуй актуальные avatar-модели Kie.ai и сохрани отдельный skill.</div><div class="card"><b>Перенос в агента</b><br>подключи те же tools + skills к Codex, Claude Code или Hermes.</div></div></section>
+<section class="section links"><h2>Ссылки для агента</h2><a href="https://docs.kie.ai/">https://docs.kie.ai/</a><a href="https://kie.ai/market">https://kie.ai/market</a><a href="https://kie.ai/minimax-h3">https://kie.ai/minimax-h3</a><a href="https://github.com/felores/kie-cli-mcp">https://github.com/felores/kie-cli-mcp</a><a href="https://github.com/0xadvait/ai-video-skill">https://github.com/0xadvait/ai-video-skill</a><a href="https://github.com/aicontentskills/ai-video-storyboard-skill">https://github.com/aicontentskills/ai-video-storyboard-skill</a></section>
+</main><div class="fixed"><a href="#video">▶ Вернуться к видео · 8 минут</a></div>
 '''
-first_close = html.find('</section>')
-html = html[:first_close+10] + '\n' + media_section + html[first_close+10:]
-html = html.replace('Remote Desktop Commander связывает ChatGPT с Mac, Windows или VPS.', 'Execution bridge связывает AI-агента с Mac, Windows или VPS. В записи урока в качестве примера используется Remote Desktop Commander.', 1)
-html = html.replace('<span>Remote Desktop Commander подключён к вашему ПК или VPS.</span>', '<span>Execution bridge подключён к вашему ПК или VPS и агент реально умеет выполнять команды.</span>', 1)
-html = html.replace('<div class="fixed-cta"><a href="#checklist">✅ <span>К финальному чек-листу</span> — проверить, что всё реально работает</a></div>', '<div class="fixed-cta"><a href="#video">▶ <span>Вернуться к видео</span> · 8 минут</a></div>')
 
-extra_js = r'''
-<script>
-(function(){
-  const v=document.getElementById('lessonVideo');
-  const p=document.getElementById('lessonProgress');
-  const music=document.getElementById('guideMusic');
-  const toggle=document.getElementById('musicToggle');
-  const stop=document.getElementById('musicStop');
-  const volume=document.getElementById('musicVolume');
-  const chapters=[...document.querySelectorAll('.chapter[data-time]')];
-  if(music && volume){music.volume=parseFloat(volume.value)||0.14; volume.addEventListener('input',()=>music.volume=parseFloat(volume.value)||0);}
-  if(toggle && music){toggle.addEventListener('click',async()=>{try{if(music.paused){await music.play();toggle.textContent='❚❚ Пауза музыки'}else{music.pause();toggle.textContent='▶ Включить музыку'}}catch(e){}})}
-  if(stop && music){stop.addEventListener('click',()=>{music.pause();music.currentTime=0;if(toggle)toggle.textContent='▶ Включить музыку'})}
-  if(v){
-    v.addEventListener('timeupdate',()=>{if(p&&v.duration)p.style.width=((v.currentTime/v.duration)*100)+'%'; const t=v.currentTime; let active=null; chapters.forEach(c=>{if(t>=Number(c.dataset.time))active=c;c.classList.remove('active')}); if(active)active.classList.add('active')});
-    v.addEventListener('play',()=>{if(music&&!music.paused)music.volume=Math.min(parseFloat(volume?.value||0.14),0.07)});
-    v.addEventListener('pause',()=>{if(music&&!music.paused)music.volume=parseFloat(volume?.value||0.14)});
-  }
-  chapters.forEach(btn=>btn.addEventListener('click',()=>{if(!v)return; v.currentTime=Number(btn.dataset.time)||0; v.scrollIntoView({behavior:'smooth',block:'center'}); v.play().catch(()=>{});}));
-})();
-</script>
-'''
-html = html.replace('</body>', extra_js + '\n</body>')
-OUT.parent.mkdir(parents=True, exist_ok=True)
-OUT.write_text(html, encoding='utf-8')
-print(f'BUILT {OUT} bytes={OUT.stat().st_size}')
+js='''<script>(function(){const v=document.getElementById('lessonVideo'),p=document.getElementById('progress'),m=document.getElementById('guideMusic'),t=document.getElementById('musicToggle'),s=document.getElementById('musicStop'),vol=document.getElementById('musicVolume'),chs=[...document.querySelectorAll('.chapter')];m.volume=.14;vol.oninput=()=>m.volume=+vol.value;t.onclick=async()=>{if(m.paused){try{await m.play();t.textContent='❚❚ Пауза'}catch(e){}}else{m.pause();t.textContent='▶ Включить'}};s.onclick=()=>{m.pause();m.currentTime=0;t.textContent='▶ Включить'};v.ontimeupdate=()=>{if(v.duration)p.style.width=(v.currentTime/v.duration*100)+'%';let a=null;chs.forEach(c=>{c.classList.remove('active');if(v.currentTime>=+c.dataset.time)a=c});if(a)a.classList.add('active')};v.onplay=()=>{if(!m.paused)m.volume=Math.min(+vol.value,.07)};v.onpause=()=>{if(!m.paused)m.volume=+vol.value};chs.forEach(c=>c.onclick=()=>{v.currentTime=+c.dataset.time;v.scrollIntoView({behavior:'smooth',block:'center'});v.play().catch(()=>{})});document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>{const e=document.getElementById(b.dataset.copy);e.focus();e.select();try{navigator.clipboard.writeText(e.value)}catch(x){document.execCommand('copy')}})})();</script>'''
+
+page=f'''<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#12100d"><title>Hardcoding PRO · Kie.ai + AI Video Pipeline</title><style>{css}</style></head><body>{body}{js}</body></html>'''
+OUT.parent.mkdir(parents=True,exist_ok=True)
+OUT.write_text(page,encoding='utf-8')
+print('BUILT',OUT,'bytes',OUT.stat().st_size)
