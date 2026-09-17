@@ -1,0 +1,120 @@
+name: Render Kie AI fast delivery
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/render-kie-fast.yml'
+
+jobs:
+  render-fast:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Prepare composition and audio
+        run: |
+          rm -rf render-fast
+          mkdir -p render-fast/audio render-fast/snapshots render-fast/clips
+          cp kie-ai/lesson.html render-fast/index.html
+          python3 - <<'PY'
+          import json, urllib.request
+          from pathlib import Path
+
+          manifest = json.loads(Path('kie-ai/audio-manifest.json').read_text())
+          path = Path('render-fast/index.html')
+          html = path.read_text()
+          # HyperFrames owns timeline seeking for snapshots; remove normal browser autoplay.
+          html = html.replace(
+              "if(!window.__hyperframes)requestAnimationFrame(()=>tl.play(0));",
+              ""
+          )
+          path.write_text(html)
+
+          out = Path('render-fast/audio')
+          for item in manifest['scenes']:
+              dst = out / f'{item["scene"]:02d}.wav'
+              print('download', item['scene'], '->', dst)
+              urllib.request.urlretrieve(item['url'], dst)
+          print('Downloaded', len(manifest['scenes']), 'voice clips')
+          PY
+
+      - name: Capture one complete HyperFrames frame per scene
+        working-directory: render-fast
+        run: |
+          TIMES=$(python3 - <<'PY'
+          print(','.join(str(i*20+3) for i in range(24)))
+          PY
+          )
+          npx -y hyperframes@latest snapshot . --at "$TIMES" --output snapshots --no-end --describe false
+          COUNT=$(find snapshots -type f -name '*.png' | wc -l)
+          echo "Captured $COUNT scene frames"
+          test "$COUNT" -eq 24
+
+      - name: Build 24 voiced scene clips
+        working-directory: render-fast
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          snaps = sorted(Path('snapshots').glob('*.png'))
+          assert len(snaps) == 24, len(snaps)
+          lines = []
+          for i, snap in enumerate(snaps, start=1):
+              lines.append(f'{i:02d}|{snap.as_posix()}|audio/{i:02d}.wav|clips/{i:02d}.mp4')
+          Path('scene-files.txt').write_text('\n'.join(lines))
+          PY
+
+          while IFS='|' read -r N IMG AUDIO OUT; do
+            echo "Rendering scene $N"
+            ffmpeg -hide_banner -loglevel error -y \
+              -loop 1 -framerate 24 -i "$IMG" \
+              -i "$AUDIO" \
+              -filter_complex "[0:v]scale=1920:1080,zoompan=z='min(zoom+0.00016,1.035)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=480:s=1920x1080:fps=24,fade=t=in:st=0:d=0.25,fade=t=out:st=19.7:d=0.3[v];[1:a]apad=pad_dur=20,atrim=0:20,afade=t=in:st=0:d=0.12,afade=t=out:st=19.65:d=0.25[a]" \
+              -map '[v]' -map '[a]' -t 20 \
+              -c:v libx264 -preset veryfast -crf 20 -pix_fmt yuv420p -r 24 \
+              -c:a aac -b:a 160k -ar 48000 \
+              "$OUT"
+          done < scene-files.txt
+
+      - name: Assemble final MP4
+        working-directory: render-fast
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          Path('concat.txt').write_text('\n'.join(f"file 'clips/{i:02d}.mp4'" for i in range(1,25)))
+          PY
+          ffmpeg -hide_banner -loglevel error -y -f concat -safe 0 -i concat.txt -c copy Kie_AI_Video_Pipeline_True_Pavel_FAST.mp4
+
+      - name: Verify MP4
+        working-directory: render-fast
+        run: |
+          test -s Kie_AI_Video_Pipeline_True_Pavel_FAST.mp4
+          ffprobe -v error \
+            -show_entries format=duration,size \
+            -show_entries stream=codec_name,width,height \
+            -of json \
+            Kie_AI_Video_Pipeline_True_Pavel_FAST.mp4 | tee verify.json
+          sha256sum Kie_AI_Video_Pipeline_True_Pavel_FAST.mp4 | tee Kie_AI_Video_Pipeline_True_Pavel_FAST.mp4.sha256
+
+      - name: Upload delivery artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kie-ai-video-pipeline-true-pavel-fast
+          path: |
+            render-fast/Kie_AI_Video_Pipeline_True_Pavel_FAST.mp4
+            render-fast/Kie_AI_Video_Pipeline_True_Pavel_FAST.mp4.sha256
+            render-fast/verify.json
+          retention-days: 7
