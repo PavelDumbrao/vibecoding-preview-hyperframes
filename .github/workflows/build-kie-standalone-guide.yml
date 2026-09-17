@@ -1,0 +1,145 @@
+name: Build standalone Kie AI HTML guide
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'kie-ai/build_standalone_guide.py'
+      - '.github/workflows/build-kie-standalone-guide.yml'
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install media tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg zip
+          ffmpeg -version | head -n 1
+
+      - name: Download verified full HyperFrames video
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          rm -rf input-video
+          mkdir -p input-video
+          gh run download 35221882621 \
+            -n kie-ai-video-pipeline-true-pavel \
+            -D input-video
+          test -s input-video/Kie_AI_Video_Pipeline_True_Pavel.mp4
+          ACTUAL=$(sha256sum input-video/Kie_AI_Video_Pipeline_True_Pavel.mp4 | awk '{print $1}')
+          EXPECTED=43080b6f731dfaa199bdb8d85f8251a7bb73da38bf8cdb5abca546afca86c351
+          test "$ACTUAL" = "$EXPECTED"
+          echo "VIDEO_SHA_OK=$ACTUAL"
+
+      - name: Create embedded ambient music and poster
+        run: |
+          rm -rf work dist
+          mkdir -p work dist
+          make_chord() {
+            out="$1"; a="$2"; b="$3"; c="$4"; d="$5"
+            ffmpeg -hide_banner -loglevel error -y \
+              -f lavfi -i "sine=frequency=${a}:sample_rate=44100:duration=30" \
+              -f lavfi -i "sine=frequency=${b}:sample_rate=44100:duration=30" \
+              -f lavfi -i "sine=frequency=${c}:sample_rate=44100:duration=30" \
+              -f lavfi -i "sine=frequency=${d}:sample_rate=44100:duration=30" \
+              -filter_complex "[0:a]volume=.05[a0];[1:a]volume=.04[a1];[2:a]volume=.035[a2];[3:a]volume=.025[a3];[a0][a1][a2][a3]amix=inputs=4,lowpass=f=900,afade=t=in:st=0:d=2,afade=t=out:st=28:d=2,pan=stereo|c0=c0|c1=c0[a]" \
+              -map '[a]' "$out"
+          }
+          make_chord work/c1.wav 130.81 164.81 196.00 246.94
+          make_chord work/c2.wav 110.00 130.81 164.81 196.00
+          make_chord work/c3.wav 87.31 110.00 130.81 164.81
+          make_chord work/c4.wav 98.00 123.47 146.83 220.00
+          printf "file 'c1.wav'\nfile 'c2.wav'\nfile 'c3.wav'\nfile 'c4.wav'\n" > work/music.txt
+          (cd work && ffmpeg -hide_banner -loglevel error -y -f concat -safe 0 -i music.txt -c:a libmp3lame -b:a 72k hardcoding_ai_ambient.mp3)
+          ffmpeg -hide_banner -loglevel error -y \
+            -ss 2 -i input-video/Kie_AI_Video_Pipeline_True_Pavel.mp4 \
+            -frames:v 1 -q:v 3 work/poster.jpg
+          test -s work/hardcoding_ai_ambient.mp3
+          test -s work/poster.jpg
+
+      - name: Build standalone HTML
+        run: |
+          python3 kie-ai/build_standalone_guide.py
+          test -s dist/Hardcoding_PRO_Kie_AI_Video_Guide_FINAL.html
+
+      - name: Verify embedded payloads and structure
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64, hashlib, re, json
+          p=Path('dist/Hardcoding_PRO_Kie_AI_Video_Guide_FINAL.html')
+          s=p.read_text(encoding='utf-8')
+          assert s.count('data:video/mp4;base64,') == 1
+          assert s.count('data:audio/mpeg;base64,') == 1
+          assert s.count('class="chapter" data-time=') == 24
+          assert 'Финальный чек-лист' in s
+          assert 'Research Once' in s
+          vm=re.search(r'data:video/mp4;base64,([A-Za-z0-9+/=]+)',s)
+          am=re.search(r'data:audio/mpeg;base64,([A-Za-z0-9+/=]+)',s)
+          vb=base64.b64decode(vm.group(1))
+          ab=base64.b64decode(am.group(1))
+          vsha=hashlib.sha256(vb).hexdigest()
+          assert vsha == '43080b6f731dfaa199bdb8d85f8251a7bb73da38bf8cdb5abca546afca86c351', vsha
+          meta={
+            'html_size': p.stat().st_size,
+            'html_sha256': hashlib.sha256(p.read_bytes()).hexdigest(),
+            'video_size': len(vb),
+            'video_sha256': vsha,
+            'music_size': len(ab),
+            'music_sha256': hashlib.sha256(ab).hexdigest(),
+            'chapters': 24,
+          }
+          Path('dist/meta.json').write_text(json.dumps(meta,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          print(json.dumps(meta,ensure_ascii=False))
+          PY
+
+      - name: Package release ZIP
+        run: |
+          cd dist
+          zip -9 Hardcoding_PRO_Kie_AI_Video_Guide_FINAL.zip Hardcoding_PRO_Kie_AI_Video_Guide_FINAL.html
+          ZIP_SIZE=$(stat -c %s Hardcoding_PRO_Kie_AI_Video_Guide_FINAL.zip)
+          ZIP_SHA=$(sha256sum Hardcoding_PRO_Kie_AI_Video_Guide_FINAL.zip | awk '{print $1}')
+          python3 - <<PY
+          import json
+          from pathlib import Path
+          p=Path('meta.json')
+          d=json.loads(p.read_text())
+          d['zip_size']=int('$ZIP_SIZE')
+          d['zip_sha256']='$ZIP_SHA'
+          p.write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\n')
+          print(json.dumps(d,ensure_ascii=False))
+          PY
+
+      - name: Publish stable GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG=kie-guide-20260917-v1
+          gh release delete "$TAG" -y --cleanup-tag >/dev/null 2>&1 || true
+          gh release create "$TAG" \
+            dist/Hardcoding_PRO_Kie_AI_Video_Guide_FINAL.zip \
+            dist/Hardcoding_PRO_Kie_AI_Video_Guide_FINAL.html \
+            dist/meta.json \
+            --title "Hardcoding PRO · Kie.ai + AI Video Pipeline" \
+            --notes "Autonomous HTML guide with embedded 8-minute Full HD lesson, 24 chapters, prompts, checklist and embedded ambient music."
+          gh release view "$TAG" --json url,tagName,assets
+
+      - name: Upload Actions artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kie-ai-standalone-html-guide
+          path: |
+            dist/Hardcoding_PRO_Kie_AI_Video_Guide_FINAL.html
+            dist/Hardcoding_PRO_Kie_AI_Video_Guide_FINAL.zip
+            dist/meta.json
+          retention-days: 7
